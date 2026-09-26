@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fruit Freshness & Shelf-Life Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="navbar">
+    <span class="nav-icon">🍎</span>
+    <span class="nav-brand">Fruit<span>Insight</span></span>
+    <span class="nav-tag">ResNet50 + LSTM</span>
+  </nav>
+
+  <div class="page">
+
+    <!-- Hero -->
+    <div class="hero">
+      <h1>Fruit Freshness &amp; <span>Shelf-Life</span> Prediction</h1>
+      <p>AI-powered freshness analysis and remaining shelf-life estimation using ResNet50 CNN and LSTM models.</p>
+    </div>
+
+    <!-- Error banner (server-side validation) -->
+    {% if error %}
+    <div class="alert-error" style="max-width:560px;width:100%;margin-bottom:1.25rem;">
+      ⚠ {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Upload card -->
+    <div class="card">
+      <div class="card-header">
+        <h2>📸 Upload &amp; Analyse</h2>
+        <p>Upload a fruit image and provide ambient conditions for a complete analysis.</p>
+      </div>
+
+      <div class="card-body">
+        <form id="predict-form" method="POST" action="/predict" enctype="multipart/form-data" novalidate>
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" name="file"
+                   accept="image/*"
+                   aria-label="Upload fruit image" />
+            <span class="drop-icon">📂</span>
+            <p class="drop-label"><strong>Click to upload</strong> or drag &amp; drop</p>
+            <p class="drop-hint">JPEG · PNG · WEBP · BMP · max 10 MB</p>
+          </div>
+          <div id="file-error" class="error-msg" style="display:none;margin-top:.4rem;"></div>
+
+          <!-- Image preview -->
+          <div id="preview-wrapper">
+            <img id="preview-img" src="" alt="Selected fruit image" />
+            <button type="button" id="clear-btn" aria-label="Remove image">✕</button>
+          </div>
+
+          <!-- Environmental inputs -->
+          <div class="form-grid">
+            <div class="field">
+              <label for="temperature">🌡 Temperature</label>
+              <input type="number" id="temperature" name="temperature"
+                     placeholder="25" value="25" step="0.1" min="-50" max="80"
+                     aria-describedby="temp-error" />
+              <div class="field-hint">°C</div>
+              <div id="temp-error" class="error-msg" style="display:none;"></div>
+            </div>
+            <div class="field">
+              <label for="humidity">💧 Humidity</label>
+              <input type="number" id="humidity" name="humidity"
+                     placeholder="60" value="60" step="0.1" min="0" max="100"
+                     aria-describedby="hum-error" />
+              <div class="field-hint">%</div>
+              <div id="hum-error" class="error-msg" style="display:none;"></div>
+            </div>
+            <div class="field">
+              <label for="moisture">🌊 Moisture</label>
+              <input type="number" id="moisture" name="moisture"
+                     placeholder="45" value="45" step="0.1" min="0" max="100"
+                     aria-describedby="mois-error" />
+              <div class="field-hint">%</div>
+              <div id="mois-error" class="error-msg" style="display:none;"></div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="submit-btn" disabled>
+            <span id="btn-text">Predict</span>
+            <span class="spinner" id="spinner"></span>
+          </button>
+
+        </form>
+      </div>
+    </div><!-- /card -->
+
+  </div><!-- /page -->
+
+  <footer>
+    FruitInsight &mdash; Final Year Project &mdash; ResNet50 CNN + LSTM Pipeline
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

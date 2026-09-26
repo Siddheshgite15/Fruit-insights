@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prediction Results — FruitInsight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="navbar">
+    <span class="nav-icon">🍎</span>
+    <span class="nav-brand">Fruit<span>Insight</span></span>
+    <span class="nav-tag">ResNet50 + LSTM</span>
+  </nav>
+
+  <div class="page">
+
+    {% set is_fresh  = result.expiry_status | lower == "fresh" %}
+    {% set status_lc = result.expiry_status | lower %}
+
+    <div class="result-layout">
+
+      <!-- LEFT: summary card -->
+      <div class="card" style="align-self:start;">
+        <div class="card-header">
+          <h2>📊 Prediction Summary</h2>
+          <p>Processed in {{ result.processing_time_ms }} ms &nbsp;·&nbsp; Day {{ result.day_no }}</p>
+        </div>
+        <div class="card-body">
+
+          <!-- Status banner -->
+          <div class="status-banner {{ status_lc }}">
+            <span class="status-icon">{{ "✅" if is_fresh else "❌" }}</span>
+            <div class="status-info">
+              <h2 class="{{ status_lc }}">{{ result.expiry_status | upper }}</h2>
+              <span class="fruit-tag">🍎 {{ result.fruit_type }}</span>
+            </div>
+          </div>
+
+          <!-- Metric tiles -->
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <div class="m-label">CNN Confidence</div>
+              <div class="m-value">{{ result.cnn_confidence }}<span class="m-unit"> %</span></div>
+            </div>
+            <div class="metric-tile">
+              <div class="m-label">Freshness Index</div>
+              <div class="m-value">{{ result.freshness_index }}<span class="m-unit"> / 100</span></div>
+            </div>
+            <div class="metric-tile" style="grid-column:span 2;">
+              <div class="m-label">Remaining Shelf Life</div>
+              <div class="m-value">{{ result.remaining_shelf_life_days }}<span class="m-unit"> days</span></div>
+            </div>
+          </div>
+
+          <!-- Freshness gauge -->
+          <div class="gauge-wrap">
+            <div class="gauge-header">
+              <span>Freshness Index</span>
+              <span>{{ result.freshness_index }} / 100</span>
+            </div>
+            <div class="gauge-bar-bg">
+              <div class="gauge-bar-fill {{ status_lc }}"
+                   data-pct="{{ result.freshness_index }}"
+                   style="width:0%;"></div>
+            </div>
+          </div>
+
+          <!-- CNN confidence gauge -->
+          <div class="cnn-bar-wrap gauge-wrap">
+            <div class="gauge-header">
+              <span>CNN Confidence</span>
+              <span>{{ result.cnn_confidence }} %</span>
+            </div>
+            <div class="gauge-bar-bg">
+              <div class="gauge-bar-fill cnn-bar-fill"
+                   data-pct="{{ result.cnn_confidence }}"
+                   style="width:0%;"></div>
+            </div>
+          </div>
+
+          <!-- Environmental conditions -->
+          <div class="env-section">
+            <h4>Environmental Conditions</h4>
+            <div class="env-pills">
+              <div class="env-pill"><span>🌡</span> {{ result.temperature }} °C</div>
+              <div class="env-pill"><span>💧</span> {{ result.humidity }} %</div>
+              <div class="env-pill"><span>🌊</span> {{ result.moisture }} %</div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /left card -->
+
+      <!-- RIGHT: image + disclaimer -->
+      <div class="card img-card" style="align-self:start;">
+        <div class="card-header">
+          <h2>🖼 Uploaded Image</h2>
+          <p>This image was classified by the ResNet50 CNN.</p>
+        </div>
+        <div class="card-body">
+
+          <img class="uploaded-img"
+               src="data:{{ image_mime }};base64,{{ image_b64 }}"
+               alt="Uploaded fruit image" />
+
+          <!-- Model info table -->
+          <table style="width:100%;margin-top:1rem;font-size:.82rem;border-collapse:collapse;">
+            <tbody>
+              <tr>
+                <td style="padding:.35rem 0;color:var(--gray-500);font-weight:600;">Detected Class</td>
+                <td style="padding:.35rem 0;text-align:right;color:var(--gray-700);">{{ result.expiry_status }} {{ result.fruit_type }}</td>
+              </tr>
+              <tr style="border-top:1px solid var(--gray-100);">
+                <td style="padding:.35rem 0;color:var(--gray-500);font-weight:600;">CNN Confidence</td>
+                <td style="padding:.35rem 0;text-align:right;">{{ result.cnn_confidence }} %</td>
+              </tr>
+              <tr style="border-top:1px solid var(--gray-100);">
+                <td style="padding:.35rem 0;color:var(--gray-500);font-weight:600;">Freshness Index</td>
+                <td style="padding:.35rem 0;text-align:right;">{{ result.freshness_index }} / 100</td>
+              </tr>
+              <tr style="border-top:1px solid var(--gray-100);">
+                <td style="padding:.35rem 0;color:var(--gray-500);font-weight:600;">Shelf Life</td>
+                <td style="padding:.35rem 0;text-align:right;">{{ result.remaining_shelf_life_days }} days</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="disclaimer">
+            <strong>ℹ Note:</strong>
+            Freshness Index is a deterministic heuristic (CNN confidence–based), not a separate ML output.
+            Shelf-life prediction uses a single-timestep LSTM sequence (no prior temporal context),
+            so accuracy is lower than a full multi-day sequence.
+            Temperature, humidity, and moisture are included as LSTM input features.
+          </div>
+
+          <a href="/" class="back-btn">← Analyse Another Fruit</a>
+
+        </div>
+      </div><!-- /right card -->
+
+    </div><!-- /result-layout -->
+
+  </div><!-- /page -->
+
+  <footer>
+    FruitInsight &mdash; Final Year Project &mdash; ResNet50 CNN + LSTM Pipeline
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
